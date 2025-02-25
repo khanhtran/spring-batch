@@ -1,5 +1,5 @@
 A complete spring batch application
-- requires postgres database
+- requires postgres database. can create a docker-compose file from https://hub.docker.com/_/postgres
 - run schema-all.sql to populate domain table
 - able to convert environment variables to jobParameters
 - job can be re run event if it completed successfully
