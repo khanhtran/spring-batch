@@ -3,3 +3,8 @@ A complete spring batch application
 - run schema-all.sql to populate domain table
 - able to convert environment variables to jobParameters
 - job can be re run event if it completed successfully
+
+Using SpringBoot Job Auto Config
+    Application exit code:
+        - 5: any step fail
+    Able to run a job multiple times, no parameter changes.

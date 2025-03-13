@@ -8,11 +8,14 @@ import org.springframework.batch.core.configuration.annotation.StepScope;
 import org.springframework.batch.core.job.builder.JobBuilder;
 import org.springframework.batch.core.launch.JobLauncher;
 import org.springframework.batch.core.repository.JobRepository;
+import org.springframework.batch.core.scope.context.ChunkContext;
 import org.springframework.batch.core.step.builder.StepBuilder;
+import org.springframework.batch.core.step.tasklet.Tasklet;
 import org.springframework.batch.item.database.JdbcBatchItemWriter;
 import org.springframework.batch.item.database.builder.JdbcBatchItemWriterBuilder;
 import org.springframework.batch.item.file.FlatFileItemReader;
 import org.springframework.batch.item.file.builder.FlatFileItemReaderBuilder;
+import org.springframework.batch.repeat.RepeatStatus;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
@@ -62,11 +65,11 @@ public class BatchConfiguration {
 
 	// tag::jobstep[]
 	@Bean
-	public Job importUserJob(JobRepository jobRepository, Step step1, JobCompletionNotificationListener listener) {
+	public Job importUserJob(JobRepository jobRepository, Step step1, Step step2, JobCompletionNotificationListener listener) {
 		return new JobBuilder("importUserJob", jobRepository)
 			.listener(listener)
 			.start(step1)
-
+			.next(step2)
 			.build();
 	}
 
@@ -81,5 +84,24 @@ public class BatchConfiguration {
 				.allowStartIfComplete(true)
 			.build();
 	}
-	// end::jobstep[]
+
+	@Bean
+	public Step step2(JobRepository jobRepository, DataSourceTransactionManager transactionManager) {
+		return new StepBuilder("step2", jobRepository)
+				.tasklet(new Tasklet() {
+					@Override
+					public RepeatStatus execute(StepContribution contribution, ChunkContext chunkContext) throws Exception {
+						return RepeatStatus.FINISHED;
+					}
+				}, transactionManager)
+				.allowStartIfComplete(true)
+				.build();
+	}
+
+	@Bean
+	public Job job2(JobRepository jobRepository, Step step2) {
+		return new JobBuilder("job2", jobRepository).start(step2).build();
+
+	}
+
 }
